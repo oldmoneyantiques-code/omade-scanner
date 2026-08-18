@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>OMADE Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+    }
+
+    .wrap {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    #reader {
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #status {
+      margin-top: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      border: 0;
+      border-radius: 10px;
+      background: #111;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <h1>OMADE SCANNER</h1>
+
+    <div class="subtitle">
+      Point camera at an OMADE barcode.
+    </div>
+
+    <div id="reader"></div>
+
+    <div id="status">
+      Starting camera…
+    </div>
+
+    <button
+      type="button"
+      onclick="startScanner()"
+    >
+      START CAMERA
+    </button>
+
+  </div>
+
+
+  <script>
+
+    let scanner = null;
+    let scannerRunning = false;
+
+
+    function startScanner() {
+
+      const status =
+        document.getElementById('status');
+
+      status.textContent =
+        'Opening camera…';
+
+
+      if (!scanner) {
+
+        scanner =
+          new Html5Qrcode(
+            'reader',
+            {
+              formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128
+              ]
+            }
+          );
+
+      }
+
+
+      scanner
+        .start(
+          {
+            facingMode: 'environment'
+          },
+          {
+            fps: 10,
+            qrbox: {
+              width: 280,
+              height: 120
+            }
+          },
+
+          function(decodedText) {
+
+            if (!scannerRunning) {
+              return;
+            }
+
+            scannerRunning = false;
+
+            const code =
+              String(decodedText || '')
+                .trim();
+
+            status.textContent =
+              'SCANNED: ' + code;
+
+
+            scanner
+              .stop()
+              .then(function() {
+
+                const params =
+                  new URLSearchParams(
+                    window.location.search
+                  );
+
+                const returnUrl =
+                  params.get('return');
+
+                if (returnUrl) {
+
+                  const separator =
+                    returnUrl.includes('?')
+                      ? '&'
+                      : '?';
+
+                  window.location.href =
+                    returnUrl +
+                    separator +
+                    'scan=' +
+                    encodeURIComponent(code);
+
+                } else {
+
+                  status.textContent =
+                    'SCANNED: ' +
+                    code +
+                    ' — no return URL found.';
+
+                }
+
+              });
+
+          },
+
+          function() {
+            // Ignore frames with no barcode.
+          }
+        )
+        .then(function() {
+
+          scannerRunning = true;
+
+          status.textContent =
+            'Camera ready — scan barcode.';
+
+        })
+        .catch(function(err) {
+
+          scannerRunning = false;
+
+          status.textContent =
+            'CAMERA ERROR: ' +
+            String(err);
+
+        });
+
+    }
+
+
+    window.addEventListener(
+      'load',
+      function() {
+        startScanner();
+      }
+    );
+
+  </script>
+
+</body>
+</html>
