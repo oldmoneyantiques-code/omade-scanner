@@ -155,53 +155,7 @@
               .stop()
               .then(function() {
 
-                const params =
-                  new URLSearchParams(
-                    window.location.search
-                  );
-
-                const returnUrl =
-                  params.get('return');
-
-                if (returnUrl) {
-
-                  const separator =
-                    returnUrl.includes('?')
-                      ? '&'
-                      : '?';
-
-                if (window.opener) {
-
-  window.opener.postMessage(
-    {
-      type: 'omade-scan',
-      code: code
-    },
-    '*'
-  );
-
-  status.textContent =
-    'SCANNED: ' + code;
-
-  setTimeout(function() {
-    window.close();
-  }, 400);
-
-} else {
-
-  status.textContent =
-    'SCANNED: ' +
-    code +
-    ' — return to OMADE POS.';
-
-}
-
-                  status.textContent =
-                    'SCANNED: ' +
-                    code +
-                    ' — no return URL found.';
-
-                }
+               
 
               });
 
