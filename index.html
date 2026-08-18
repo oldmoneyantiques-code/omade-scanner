@@ -184,7 +184,31 @@
         });
 
     }
+if (window.opener) {
 
+  window.opener.postMessage(
+    {
+      type: 'omade-scan',
+      code: code
+    },
+    '*'
+  );
+
+  status.textContent =
+    'SCANNED: ' + code;
+
+  setTimeout(function() {
+    window.close();
+  }, 500);
+
+} else {
+
+  status.textContent =
+    'SCANNED: ' +
+    code +
+    ' — return to OMADE POS.';
+
+}
 
     window.addEventListener(
       'load',
